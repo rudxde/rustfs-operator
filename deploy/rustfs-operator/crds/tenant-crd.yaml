@@ -453,14 +453,14 @@ spec:
                       - requestId
                       type: object
                     type: array
+                    x-kubernetes-list-map-keys:
+                    - poolName
+                    x-kubernetes-list-type: map
                   pvcRetentionPolicy:
                     enum:
                     - Retain
                     type: string
                 type: object
-                x-kubernetes-validations:
-                - message: decommissionRequests must contain at most one entry per poolName
-                  rule: '!has(self.decommissionRequests) || self.decommissionRequests.all(r, self.decommissionRequests.exists_one(other, other.poolName == r.poolName))'
               pools:
                 items:
                   description: |-
@@ -971,10 +971,8 @@ spec:
                           type: object
                       type: object
                     name:
+                      minLength: 1
                       type: string
-                      x-kubernetes-validations:
-                      - message: pool name must be not empty
-                        rule: self != ''
                     nodeSelector:
                       additionalProperties:
                         type: string
@@ -994,11 +992,9 @@ spec:
                           nullable: true
                           type: object
                         path:
+                          minLength: 1
                           nullable: true
                           type: string
-                          x-kubernetes-validations:
-                          - message: path must be not empty when specified
-                            rule: self != ''
                         volumeClaimTemplate:
                           description: PersistentVolumeClaimSpec describes the common attributes of storage devices and allows a Source for provider-specific attributes
                           nullable: true
@@ -1112,10 +1108,8 @@ spec:
                           type: object
                         volumesPerServer:
                           format: int32
+                          minimum: 1
                           type: integer
-                          x-kubernetes-validations:
-                          - message: volumesPerServer must be greater than 0
-                            rule: self > 0
                       required:
                       - volumesPerServer
                       type: object
@@ -1159,10 +1153,8 @@ spec:
                       type: object
                     servers:
                       format: int32
+                      minimum: 1
                       type: integer
-                      x-kubernetes-validations:
-                      - message: servers must be greater than 0
-                        rule: self > 0
                     tolerations:
                       description: Tolerations allow pods to schedule onto nodes with matching taints.
                       items:
@@ -1282,10 +1274,12 @@ spec:
                   - messageExpression: '"pool " + self.name + " with 3 servers must have at least 6 volumes in total"'
                     reason: FieldValueInvalid
                     rule: self.servers != 3 || self.servers * self.persistence.volumesPerServer >= 6
+                maxItems: 32
+                minItems: 1
                 type: array
-                x-kubernetes-validations:
-                - message: pools must be configured
-                  rule: self.size() > 0
+                x-kubernetes-list-map-keys:
+                - name
+                x-kubernetes-list-type: map
               priorityClassName:
                 nullable: true
                 type: string
